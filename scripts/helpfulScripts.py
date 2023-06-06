@@ -1,4 +1,4 @@
-from brownie import (accounts, network, config, Contract)
+from brownie import (accounts, network, config, Contract, interface)
 
 # contractList = {
 #     "link": LinkToken
@@ -29,6 +29,14 @@ def getContract(_contractName, _account=None):
         contract = Contract.from_abi(contractList[_contractName]._name, SCaddress, contractList[_contractName].abi)
     
     return contract 
+
+def approveERC20(amount, spender, erc20Address, account):
+    print("Approving transaction...")
+    erc20 = interface.IERC20(erc20Address)
+    tx = erc20.approve(spender, amount, {"from" : account})
+    tx.wait(1)
+    print("Approved!")
+    return tx
 
 
 
