@@ -1,4 +1,5 @@
 from brownie import (accounts, network, config, Contract, interface)
+from web3 import Web3
 
 # contractList = {
 #     "link": LinkToken
@@ -33,9 +34,9 @@ def getContract(_contractName, _account=None):
 def approveERC20(amount, spender, erc20Address, account):
     print("Approving transaction...")
     erc20 = interface.IERC20(erc20Address)
-    tx = erc20.approve(spender, amount, {"from" : account})
+    tx = erc20.approve(spender, Web3.toWei(amount, "ether"), {"from" : account})
     tx.wait(1)
-    print("Approved!")
+    print("Approved spending of " + str(amount) + " " + erc20.symbol() + " !")
     return tx
 
 

@@ -4,7 +4,7 @@ from brownie import config, network, interface
 from web3 import Web3
 
 def depositERC20(lendingPool, ERC20adress, amount, account):
-    tx = lendingPool.deposit(ERC20adress, Web3.toWei(0.1, "ether"), account.address, 0, {"from" : account})
+    tx = lendingPool.deposit(ERC20adress, Web3.toWei(amount, "ether"), account.address, 0, {"from" : account})
     tx.wait(1)
     print("Deposited!")
     return tx
@@ -16,13 +16,10 @@ def borrowERC20(lendingPool, tokenAdress, amount, borrowType, account):
     print("Borrowed " + str(amount) + " " + erc20.symbol())
     return tx
 
-def repayERC20(lendingPool, tokenAdress, amount, account):
-    if(amount == 'max'):
-        tx = lendingPool.repay(tokenAdress, type(uint256).max, borrowType, account.address, {"from" : account})
-        tx.wait(1)
-    else:
-        tx = lendingPool.repay(tokenAdress, amount, borrowType, account.address, {"from" : account})
-        tx.wait(1)
+def repayERC20(lendingPool, tokenAdress, amount, borrowType, account):
+    tx = lendingPool.repay(tokenAdress, amount, borrowType, account.address, {"from" : account})
+    tx.wait(1)
+    return tx
 
 def getLendingPool():
     lendingPoolAdressesProvider = interface.ILendingPoolAddressesProvider(config["networks"][network.show_active()]["lendingPoolAdressesProvider"])
@@ -57,23 +54,27 @@ def getAssetPrice(priceFeedAddress):
 def main():
     account = getAccount()
     wethAddress = config["networks"][network.show_active()]["wethToken"]
+    daiAddress = config["networks"][network.show_active()]["daiToken"]
     if ("fork" in network.show_active()):
         getWeth()
     lendingPool = getLendingPool()
 
-    approveERC20(Web3.toWei(0.1, "ether"), lendingPool.address, wethAddress, account)
-    
-    depositERC20(lendingPool, wethAddress, Web3.toWei(0.1, "ether"), account)
+    approveERC20(0.15, lendingPool.address, wethAddress, account)
+    depositERC20(lendingPool, wethAddress, 0.15, account)
 
-    (totalCollateralETH, totalDebtETH, availableBorrowsETH) = getAccBorrowData(lendingPool, account)
+    getAccBorrowData(lendingPool, account)
 
     daiEthPrice = getAssetPrice(config["networks"][network.show_active()]["daiEthPriceFeed"])
+    amount = 0.05/ daiEthPrice
 
-    borrowERC20(lendingPool, config["networks"][network.show_active()]["daiToken"],  0.05/ daiEthPrice , 1, account)
+    borrowERC20(lendingPool, daiAddress, amount, 1, account)
     
     getAccBorrowData(lendingPool, account)
 
-    repayERC20(lendingPool, config["networks"][network.show_active()]["daiToken"], 'max', account)
+    approveERC20(amount, lendingPool.address, daiAddress, account)
+    repayERC20(lendingPool, daiAddress, amount, 1, account)
+
+    getAccBorrowData(lendingPool, account)
 
 
     
