@@ -19,6 +19,8 @@ def borrowERC20(lendingPool, tokenAdress, amount, borrowType, account):
 def repayERC20(lendingPool, tokenAdress, amount, borrowType, account):
     tx = lendingPool.repay(tokenAdress, amount, borrowType, account.address, {"from" : account})
     tx.wait(1)
+    erc20 = interface.IERC20(tokenAdress)
+    print("Repayed " + str(amount) + " " + erc20.symbol())
     return tx
 
 def getLendingPool():
