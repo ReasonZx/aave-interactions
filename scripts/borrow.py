@@ -58,7 +58,7 @@ def main():
     wethAddress = config["networks"][network.show_active()]["wethToken"]
     daiAddress = config["networks"][network.show_active()]["daiToken"]
     if ("fork" in network.show_active()):
-        getWeth()
+        getWeth(0.2)
     lendingPool = getLendingPool()
 
     approveERC20(0.15, lendingPool.address, wethAddress, account)
